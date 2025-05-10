@@ -21,6 +21,7 @@ A **single-node MongoDB instance** would struggle under such load, especially as
 ## 🏗️ Cluster Architecture
 
 We set up a local **MongoDB sharded cluster using Docker**, consisting of:
+![Alt text](images/mongodiagram.drawio.png)
 
 ### Components:
 - `mongos`: The query router

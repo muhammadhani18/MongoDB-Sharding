@@ -8,8 +8,8 @@ client = MongoClient("mongodb://localhost:27020")
 db = client.social_network
 
 fake = Faker()
-NUM_USERS = 100
-NUM_POSTS = 1000
+NUM_USERS = 1000
+NUM_POSTS = 100000
 TOPICS = ["sports", "music", "movies", "tech", "travel"]
 
 # Clear previous data
