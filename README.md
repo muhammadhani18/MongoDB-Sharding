@@ -22,7 +22,6 @@ A **single-node MongoDB instance** would struggle under such load, especially as
 
 We set up a local **MongoDB sharded cluster using Docker**, consisting of:
 
-
 ### Components:
 - `mongos`: The query router
 - `shardsvr`: Two shards for data storage
@@ -37,9 +36,10 @@ We set up a local **MongoDB sharded cluster using Docker**, consisting of:
 git clone https://github.com/your-repo/feed-sharded-cluster.git
 cd feed-sharded-cluster
 docker-compose up -d
-
+```
 
 ### 2. Initialize Config Servers
+```bash
 docker exec -it mongodb-configsvr1-1 mongosh --eval '
 rs.initiate({
   _id: "configReplSet",
@@ -51,9 +51,11 @@ rs.initiate({
   ]
 })
 '
+```
 
 ### 3. Initialize Shard Replica Sets
 #### Run these commands for each shard container:
+```bash
 docker exec -it mongodb-shard1-1 mongosh --eval '
 rs.initiate({
   _id: "shard1ReplSet",
@@ -67,14 +69,18 @@ rs.initiate({
   members: [{_id: 0, host: "shard2:27017"}]
 })
 '
+```
 
 ### 4. Add Shards to Router
+```bash
 docker exec -it mongodb-router-1 mongosh --eval '
 sh.addShard("shard1ReplSet/shard1:27017");
 sh.addShard("shard2ReplSet/shard2:27017");
 '
+```
 
 ### 5. Enable Sharding and Configure Shard Keys
+```bash
 docker exec -it mongodb-router-1 mongosh --eval '
 sh.enableSharding("social_network");
 
@@ -93,6 +99,8 @@ sh.shardCollection("social_network.likes", { post_id: 1 });
 // Shard friendships on user_id (queries by user)
 sh.shardCollection("social_network.friendships", { user_id: 1 });
 '
+```
+
 ## 🧠 Why these shard keys ? 
 
 | Collection    | Shard Key         | Reasoning                                    |
@@ -102,7 +110,6 @@ sh.shardCollection("social_network.friendships", { user_id: 1 });
 | `comments`    | `{post_id: 1}`    | Most comments are fetched per post           |
 | `likes`       | `{post_id: 1}`    | Likes are always queried by post             |
 | `friendships` | `{user_id: 1}`    | All friend lookups are based on the user     |
-
 
 ## 🚀 How These Shard Keys Improve Performance
 ✅ Parallelism: Shard keys allow MongoDB to query only the shards that contain relevant data.
@@ -115,13 +122,14 @@ sh.shardCollection("social_network.friendships", { user_id: 1 });
 
 For example:
 
-get_all_posts_of_user(user_id) hits just one shard (posts are sharded on user_id)
-
-get_all_comments_of_user(user_id) is fast because comment inserts and lookups are localized by post_id
+- `get_all_posts_of_user(user_id)` hits just one shard (posts are sharded on user_id)
+- `get_all_comments_of_user(user_id)` is fast because comment inserts and lookups are localized by post_id
 
 ## 🧪 Running Queries and Generating Results
+```bash
 # Run the dataset generator
 python generate_data.py
 
 # Run the query script — output stored in query_results/
 python run_queries.py
+```
