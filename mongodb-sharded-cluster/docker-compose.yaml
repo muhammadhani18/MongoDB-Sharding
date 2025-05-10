@@ -1,0 +1,90 @@
+version: '3.8'
+services:
+  configsvr1:
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27017
+    volumes:
+      - config1:/data/db
+    ports:
+      - 27017:27017
+
+  configsvr2:
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27017
+    volumes:
+      - config2:/data/db
+
+  configsvr3:
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27017
+    volumes:
+      - config3:/data/db
+
+  shard1a:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27018
+    volumes:
+      - shard1a:/data/db
+    ports:
+      - 27018:27018
+
+  shard1b:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27018
+    volumes:
+      - shard1b:/data/db
+
+  shard1c:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27018
+    volumes:
+      - shard1c:/data/db
+
+  shard2a:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27019
+    volumes:
+      - shard2a:/data/db
+    ports:
+      - 27019:27019
+
+  shard2b:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27019
+    volumes:
+      - shard2b:/data/db
+
+  shard2c:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27019
+    volumes:
+      - shard2c:/data/db
+
+  mongos:
+    image: mongo:6.0
+    command: >
+      bash -c "sleep 10 &&
+      mongos --configdb configReplSet/configsvr1:27017,configsvr2:27017,configsvr3:27017 --bind_ip_all"
+    ports:
+      - 27020:27017
+    depends_on:
+      - configsvr1
+      - configsvr2
+      - configsvr3
+      - shard1a
+      - shard1b
+      - shard1c
+      - shard2a
+      - shard2b
+      - shard2c
+
+volumes:
+  config1:
+  config2:
+  config3:
+  shard1a:
+  shard1b:
+  shard1c:
+  shard2a:
+  shard2b:
+  shard2c:
